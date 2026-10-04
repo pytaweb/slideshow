@@ -1,0 +1,1321 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Swipe Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;800&family=Schibsted+Grotesk:wght@400;500;700&display=swap">
+<style>
+/* ============================================================
+   Swipe Studio
+   Layout: Vorschau (9:16) links und auf dem Desktop fixiert,
+   Werkzeuge rechts in Tabs. Auf dem Handy untereinander.
+   ============================================================ */
+
+/* ---------- Farben und Schrift ---------- */
+/* Bewusst nur ein Look: Schwarz, Grau, Weiß */
+:root {
+  --bg: #0b0b0c;
+  --surface: #151516;
+  --fg: #f2f2f2;
+  --muted: #8e8e93;
+  --line: #2c2c2e;
+  --accent: #f2f2f2;
+  --accent-fg: #0b0b0c;
+  --stage: #000000;
+  --font-ui: "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-slide: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+
+/* ---------- Grundlayout ---------- */
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 15px; line-height: 1.45; padding-inline: 16px; padding-block: 16px 40px; }
+.wrap { max-width: 1040px; margin-inline: auto; display: flex; flex-direction: column; gap: 20px; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; }
+.brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+h1 { font-size: 1.4rem; margin: 0; letter-spacing: -0.02em; }
+.tag { color: var(--muted); font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.export { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (min-width: 760px) {
+  .layout { grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 28px; }
+  .stage { position: sticky; top: 16px; }
+}
+
+/* ---------- Vorschau ---------- */
+.stage { display: flex; flex-direction: column; gap: 12px; align-items: center; min-width: 0; }
+.frame { position: relative; width: min(100%, 340px); background: var(--stage); padding: 10px; border-radius: 22px; }
+#preview { display: block; width: 100%; aspect-ratio: 9 / 16; height: auto; border-radius: 12px; touch-action: none; cursor: grab; background: #111; }
+textarea.inline-edit {
+  position: absolute; z-index: 2; margin: 0; padding: 0; border: 0; border-radius: 2px;
+  min-height: 0; resize: none; overflow: hidden; white-space: pre-wrap; line-height: 1.25;
+  font-family: var(--font-slide); background: rgba(0, 0, 0, 0.22);
+  outline: 2px dashed #ffffff; outline-offset: 4px; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
+}
+textarea.inline-edit::placeholder { color: inherit; opacity: 0.55; }
+.stagebar { width: min(100%, 340px); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rowbar { width: min(100%, 340px); display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+.rowbar .lbl { font-size: 0.85rem; font-weight: 700; }
+.stagehint { width: min(100%, 340px); }
+
+/* ---------- Tabs und Karten ---------- */
+.panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { font: inherit; font-weight: 500; color: var(--muted); background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 14px; cursor: pointer; min-height: 44px; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); font-weight: 700; }
+.group { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.group h2 { margin: 0; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.sub { display: flex; flex-direction: column; gap: 10px; }
+.hint { color: var(--muted); font-size: 0.85rem; margin: 0; }
+
+/* ---------- Bedienelemente ---------- */
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.btn { font: inherit; font-weight: 500; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 9px 13px; cursor: pointer; min-height: 40px; }
+.btn:hover { border-color: var(--muted); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 700; }
+.btn.small { min-height: 34px; padding: 5px 11px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { font: inherit; font-size: 0.9rem; color: var(--fg); background: var(--surface); border: 0; border-right: 1px solid var(--line); padding: 8px 12px; cursor: pointer; min-height: 38px; }
+.seg button:last-child { border-right: 0; }
+.seg button:disabled { opacity: .45; cursor: default; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); font-weight: 700; }
+label.field { display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; color: var(--muted); min-width: 0; }
+label.field output { color: var(--fg); font-variant-numeric: tabular-nums; }
+.fieldhead { display: flex; justify-content: space-between; }
+textarea.plain { font: inherit; width: 100%; min-height: 84px; resize: vertical; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+input[type="color"] { width: 38px; height: 34px; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); cursor: pointer; }
+.swatches { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.sw { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--line); cursor: pointer; padding: 0; }
+.sw[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.chip { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--accent-fg); font-weight: 700; }
+.btn:focus-visible, .tab:focus-visible, .thumb:focus-visible, .chip:focus-visible, .sw:focus-visible, .seg button:focus-visible, .lib-add:focus-visible, .lib-del:focus-visible, input:focus-visible, textarea.plain:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- Folienleiste und Logo-Bibliothek ---------- */
+.strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
+.thumb { flex: none; width: 54px; height: 96px; padding: 0; border: 2px solid var(--line); border-radius: 8px; background: var(--stage); cursor: pointer; overflow: hidden; position: relative; }
+.thumb canvas { display: block; width: 100%; height: 100%; }
+.thumb[aria-current="true"] { border-color: var(--accent); }
+.thumb span { position: absolute; left: 3px; top: 3px; font-size: 10px; font-weight: 700; background: rgba(0,0,0,.65); color: #fff; border-radius: 4px; padding: 0 4px; font-variant-numeric: tabular-nums; }
+.lib { display: flex; gap: 10px; flex-wrap: wrap; }
+.lib-item { position: relative; width: 56px; height: 56px; }
+.lib-add { width: 56px; height: 56px; padding: 0; border: 1px solid var(--line); border-radius: 13px; overflow: hidden; background: var(--stage); cursor: pointer; }
+.lib-add img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.lib-del { position: absolute; right: -6px; top: -6px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-size: 14px; line-height: 1; padding: 0; cursor: pointer; }
+
+/* ---------- Ergebnis ---------- */
+.results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.results-grid figure { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.results-grid img { width: 100%; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 8px; background: var(--stage); }
+.results-grid figcaption { font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+/* ---------- Projekte (Startseite) ---------- */
+.stack { display: flex; flex-direction: column; gap: 20px; }
+.home { display: flex; flex-direction: column; gap: 16px; }
+.projname { font: inherit; font-weight: 700; font-size: 1.05rem; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; min-width: 0; width: min(100%, 280px); }
+.projname:focus-visible, .proj-open:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+.proj { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.proj-open { font: inherit; color: var(--fg); text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px; cursor: pointer; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.proj-open:hover { border-color: var(--muted); }
+.proj-open img, .proj-open .noimg { display: block; width: 100%; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 8px; background: var(--stage); }
+.proj-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+
+<div class="wrap">
+
+  <!-- ===== Kopfzeile ===== -->
+  <header>
+    <div class="brand">
+      <button type="button" class="btn small" id="backBtn" hidden>← Projekte</button>
+      <h1 id="appTitle">Swipe Studio</h1>
+      <input type="text" class="projname" id="projName" maxlength="60" aria-label="Projektname" hidden>
+      <span class="hint" id="saveStatus" aria-live="polite"></span>
+    </div>
+    <div class="export" id="exportBar" hidden>
+      <span class="hint" id="exportStatus" aria-live="polite"></span>
+      <button type="button" class="btn primary" id="exportBtn">Alle Folien exportieren</button>
+    </div>
+  </header>
+
+  <!-- ===== Startseite: deine Projekte ===== -->
+  <section class="home" id="homeView" aria-label="Projekte">
+    <div class="row"><button type="button" class="btn primary" id="newProject">Neues Projekt</button></div>
+    <p class="hint" id="homeMsg">Lade deine Projekte …</p>
+    <div class="proj-grid" id="projGrid"></div>
+  </section>
+
+  <div class="stack" id="editorView" hidden>
+  <div class="layout">
+
+    <!-- ===== Vorschau ===== -->
+    <section class="stage" aria-label="Vorschau">
+      <div class="frame" id="frame">
+        <canvas id="preview" width="540" height="960" aria-label="Folienvorschau"></canvas>
+        <textarea class="inline-edit" id="inlineEdit" hidden aria-label="Text bearbeiten"></textarea>
+      </div>
+      <div class="stagebar">
+        <div class="seg" role="group" aria-label="Ziehen bewegt">
+          <button type="button" id="modeItems" aria-pressed="true">Elemente</button>
+          <button type="button" id="modePhoto" aria-pressed="false">Foto</button>
+        </div>
+        <span class="tag" id="counter">Folie 1 / 1</span>
+      </div>
+      <div class="rowbar" id="rowBar" hidden>
+        <span class="lbl">App-Reihe unten</span>
+        <div class="seg" role="group" aria-label="App-Reihe" id="rowSeg">
+          <button type="button" data-v="show" aria-pressed="true">Anzeigen</button>
+          <button type="button" data-v="hide" aria-pressed="false">Verstecken</button>
+        </div>
+        <div class="row">
+          <button type="button" class="btn small" id="rowDel" aria-label="Letztes App-Feld entfernen">−</button>
+          <button type="button" class="btn small" id="rowAdd" aria-label="App-Feld hinzufügen">+</button>
+        </div>
+      </div>
+      <p class="hint stagehint">Text antippen und tippen, ziehen verschiebt den Text. Logo-Plätze sind fest: doppelt antippen und ein Bild wählen. Blasse Felder werden nicht exportiert.</p>
+    </section>
+
+    <!-- ===== Werkzeuge ===== -->
+    <section class="panel">
+      <div class="tabs" role="tablist" aria-label="Werkzeuge">
+        <button type="button" class="tab" role="tab" data-tab="slides" aria-selected="true">Folien</button>
+        <button type="button" class="tab" role="tab" data-tab="element" aria-selected="false">Element</button>
+        <button type="button" class="tab" role="tab" data-tab="photo" aria-selected="false">Foto</button>
+        <button type="button" class="tab" role="tab" data-tab="logos" aria-selected="false">Logos</button>
+      </div>
+
+      <!-- Tab: Folien -->
+      <div class="group tabpanel" id="tab-slides" role="tabpanel">
+        <div class="strip" id="strip"></div>
+        <div class="sub">
+          <div class="row">
+            <button type="button" class="btn primary" id="addPhotos">Fotos aus Galerie</button>
+            <button type="button" class="btn" id="addBlank">Leere Folie</button>
+            <input type="file" id="fileInput" accept="image/*" multiple hidden>
+          </div>
+          <p class="hint">Jede neue Folie startet mit Logo-Feld, Titel und Beschreibung.</p>
+        </div>
+        <div class="sub">
+          <div class="row">
+            <button type="button" class="btn" id="layoutApp">Layout: App-Folie</button>
+            <button type="button" class="btn" id="layoutCover">Layout: Cover</button>
+          </div>
+          <p class="hint">Ein Layout ersetzt die Elemente der gewählten Folie.</p>
+        </div>
+        <div class="row">
+          <button type="button" class="btn" id="moveLeft" aria-label="Folie nach vorne">← Vor</button>
+          <button type="button" class="btn" id="moveRight" aria-label="Folie nach hinten">Zurück →</button>
+          <button type="button" class="btn" id="dup">Duplizieren</button>
+          <button type="button" class="btn" id="del">Löschen</button>
+        </div>
+      </div>
+
+      <!-- Tab: Element -->
+      <div class="group tabpanel" id="tab-element" role="tabpanel" hidden>
+        <div class="row" id="chips" role="group" aria-label="Elemente dieser Folie"></div>
+        <div class="row"><button type="button" class="btn" id="addText">Text hinzufügen</button></div>
+
+        <div class="sub" id="editor" hidden>
+          <div class="sub" id="textEd">
+            <label class="field" for="text"><span class="sr">Text</span>
+              <textarea class="plain" id="text" placeholder="Text für dieses Element"></textarea>
+            </label>
+            <div class="row">
+              <div class="seg" role="group" aria-label="Textstil" id="styleSeg">
+                <button type="button" data-v="shadow" aria-pressed="true">Schatten</button>
+                <button type="button" data-v="outline" aria-pressed="false">Kontur</button>
+                <button type="button" data-v="box" aria-pressed="false">Box</button>
+                <button type="button" data-v="none" aria-pressed="false">Pur</button>
+              </div>
+            </div>
+            <div class="row">
+              <div class="seg" role="group" aria-label="Ausrichtung" id="alignSeg">
+                <button type="button" data-v="left" aria-pressed="true">Links</button>
+                <button type="button" data-v="center" aria-pressed="false">Mitte</button>
+              </div>
+              <div class="seg" role="group" aria-label="Schriftstärke" id="weightSeg">
+                <button type="button" data-v="500" aria-pressed="false">Normal</button>
+                <button type="button" data-v="600" aria-pressed="true">Fett</button>
+                <button type="button" data-v="800" aria-pressed="false">Extra</button>
+              </div>
+            </div>
+            <div class="swatches" id="swatches" aria-label="Textfarbe"></div>
+            <div class="cols">
+              <label class="field" for="size"><span class="fieldhead">Schriftgröße <output id="sizeOut">56</output></span>
+                <input type="range" id="size" min="30" max="160" step="2" value="56"></label>
+              <label class="field" for="tw"><span class="fieldhead">Textbreite <output id="twOut">88%</output></span>
+                <input type="range" id="tw" min="20" max="96" step="2" value="88"></label>
+            </div>
+            <div class="row"><button type="button" class="btn" id="applyAll">Stil für alle Texte übernehmen</button></div>
+          </div>
+
+          <div class="sub" id="logoEd" hidden>
+            <div class="row">
+              <button type="button" class="btn primary" id="pickLogo">Logo wählen</button>
+              <button type="button" class="btn" id="clearLogo">Logo leeren</button>
+            </div>
+            <div class="cols">
+              <label class="field" for="lsize"><span class="fieldhead">Logogröße <output id="lsizeOut">20%</output></span>
+                <input type="range" id="lsize" min="8" max="60" step="1" value="20"></label>
+              <label class="field" for="lrad"><span class="fieldhead">Rundung <output id="lradOut">22%</output></span>
+                <input type="range" id="lrad" min="0" max="50" step="1" value="22"></label>
+            </div>
+          </div>
+
+          <div class="row"><button type="button" class="btn" id="delItem">Element löschen</button></div>
+        </div>
+        <p class="hint" id="noSel">Tippe in der Vorschau auf Text oder ein Logo, um es hier zu gestalten.</p>
+      </div>
+
+      <!-- Tab: Foto -->
+      <div class="group tabpanel" id="tab-photo" role="tabpanel" hidden>
+        <div class="row">
+          <button type="button" class="btn primary" id="setPhoto">Foto für diese Folie</button>
+          <button type="button" class="btn" id="clearPhoto">Foto entfernen</button>
+          <input type="file" id="photoInput" accept="image/*" hidden>
+        </div>
+        <div class="cols">
+          <label class="field" for="dim" id="dimField"><span class="fieldhead">Foto abdunkeln <output id="dimOut">25%</output></span>
+            <input type="range" id="dim" min="0" max="70" step="5" value="25"></label>
+          <label class="field" for="zoom" id="zoomField"><span class="fieldhead">Foto zoomen <output id="zoomOut">100%</output></span>
+            <input type="range" id="zoom" min="100" max="250" step="5" value="100"></label>
+          <label class="field" for="bgColor" id="bgField"><span class="fieldhead">Hintergrundfarbe</span>
+            <input type="color" id="bgColor" value="#1c1c1e"></label>
+        </div>
+        <p class="hint">Oben auf „Foto" umschalten, dann verschiebst du das Bild mit dem Finger.</p>
+      </div>
+
+      <!-- Tab: Logos -->
+      <div class="group tabpanel" id="tab-logos" role="tabpanel" hidden>
+        <div class="lib" id="lib"></div>
+        <div class="row">
+          <button type="button" class="btn primary" id="addLogo">Logos hochladen</button>
+          <input type="file" id="logoInput" accept="image/*" multiple hidden>
+        </div>
+        <p class="hint">Ein Logo hier antippen füllt das gewählte Logo-Feld, sonst das nächste leere. Logos, die du in der Vorschau wählst, landen automatisch hier und bleiben in diesem Browser gespeichert.</p>
+        <p class="hint" id="libMsg" aria-live="polite"></p>
+        <input type="file" id="logoPick" accept="image/*" hidden>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== Ergebnis ===== -->
+  <section id="results" class="group" hidden aria-live="polite">
+    <h2>Fertige Folien</h2>
+    <div class="row">
+      <button type="button" class="btn primary" id="saveAll" hidden>Alle nacheinander speichern</button>
+    </div>
+    <div class="results-grid" id="resultsGrid"></div>
+    <p class="hint" id="resultsHint">Jedes Bild gedrückt halten und in Fotos sichern. In TikTok lädst du sie in dieser Reihenfolge hoch.</p>
+  </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ============================================================
+     1. Konstanten und Zustand
+     ============================================================ */
+  var FONT = '"Inter", system-ui, -apple-system, "Segoe UI", sans-serif';
+  var COLORS = ['#ffffff', '#000000', '#ffe14a', '#ff5c7a', '#4ad6a7'];
+  var W = 1080, H = 1920;                       // Exportgröße
+  var $ = function (id) { return document.getElementById(id); };
+  var preview = $('preview'), pctx = preview.getContext('2d');
+
+  var lib = [];            // Logo-Bibliothek: { id, img, src }
+  var db = null, assetsApi = null, uid = null;     // Konto-Funktionen (null = nicht verfügbar)
+  var profileRef = null, projectsRef = null;
+  var project = null;      // offenes Projekt: { id, name, createdAt }
+  var lastSaved = '', saving = false, savePending = false, savingPromise = Promise.resolve();
+  var saveTimer = null, loadingProject = false, imgCache = {};
+  var slides = [];         // Folien
+  var cur = 0;             // gewählte Folie
+  var sel = -1;            // gewähltes Element der Folie
+  var mode = 'items';      // 'items' oder 'photo' (was das Ziehen bewegt)
+  var editing = null;      // Element, das gerade in der Vorschau getippt wird
+  var pickTarget = null;   // Logo-Feld, für das gerade ein Bild gewählt wird
+  var lastTap = null;      // für Doppeltippen
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function lum(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+  }
+
+  /* ============================================================
+     2. Datenmodell
+     ============================================================ */
+  // Textfeld. placeholder = true heißt: noch nicht getippt, wird blass gezeigt und nicht exportiert.
+  function newText(o) {
+    return Object.assign({ type: 'text', text: '', ph: 'Text eingeben', placeholder: true,
+      x: 0.06, y: 0.5, size: 56, color: '#ffffff', align: 'left', weight: 600, style: 'shadow', w: 0.88 }, o || {});
+  }
+  // Logo-Feld. img = null heißt: leer, wird nur in der Vorschau gezeigt.
+  function newLogo(o) {
+    return Object.assign({ type: 'logo', img: null, x: 0.17, y: 0.4, size: 0.2, radius: 0.22, group: null, logoId: null, entry: null }, o || {});
+  }
+  function newSlide(o) {
+    return Object.assign({ img: null, bg: '#1c1c1e', zoom: 1, ox: 0, oy: 0, dim: 0.25,
+      hasRow: false, rowHidden: false, imgId: null, items: [] }, o || {});
+  }
+  function appItems(n) {
+    return [
+      newLogo({ x: 0.17, y: 0.4, size: 0.2 }),
+      newText({ ph: n + '. App-Name', x: 0.3, y: 0.4, size: 78, w: 0.66 }),
+      newText({ ph: 'Was die App macht und warum du sie nutzt', x: 0.06, y: 0.56, size: 50, w: 0.88 })
+    ];
+  }
+  function coverItems() {
+    var items = [newText({ text: '5 apps i use to run my business', placeholder: false, ph: 'Titel',
+      x: 0.06, y: 0.18, size: 88, w: 0.88 })];
+    for (var i = 0; i < 5; i++) items.push(newLogo({ group: 'row' }));
+    return items;
+  }
+  function curSlide() { return slides[cur]; }
+  function curItem() { return sel >= 0 ? curSlide().items[sel] : null; }
+  function isHidden(s, it) { return it.group === 'row' && s.rowHidden; }
+  function rowItems(s) { return s.items.filter(function (i) { return i.group === 'row'; }); }
+
+  // App-Reihe unten: gleich große Felder, mittig, gleiche Abstände.
+  function arrangeRow(s) {
+    var logos = rowItems(s), n = logos.length;
+    if (!n) return;
+    var gap = 0.03, size = Math.min(0.16, (0.88 - (n - 1) * gap) / n), total = n * size + (n - 1) * gap;
+    logos.forEach(function (l, i) {
+      l.size = size; l.radius = 0.22; l.y = 0.72;
+      l.x = 0.5 - total / 2 + size / 2 + i * (size + gap);
+    });
+  }
+
+  /* ============================================================
+     3. Bilder und Logo-Bibliothek
+        Logos und Fotos liegen im Konto. Im Projekt steht nur ihre ID.
+     ============================================================ */
+  function setStatus(t) { $('saveStatus').textContent = t; }
+  function blobUrl(id) { return '/_blob/' + id; }
+  function getImg(id) {
+    if (imgCache[id]) return imgCache[id];
+    var im = new Image();
+    im.onload = function () { render(); buildLib(); };
+    im.src = blobUrl(id);
+    imgCache[id] = im;
+    return im;
+  }
+  function loadSrc(src) {                               // altes lokales Format
+    var im = new Image();
+    im.onload = function () { render(); buildLib(); };
+    im.src = src;
+    return { id: null, img: im, src: src };
+  }
+  function dataUrlToBlob(u) {
+    var p = u.split(','), mime = (p[0].match(/:(.*?);/) || [])[1] || 'image/png';
+    var bin = atob(p[1]), n = bin.length, a = new Uint8Array(n);
+    while (n--) a[n] = bin.charCodeAt(n);
+    return new Blob([a], { type: mime });
+  }
+  var libChain = Promise.resolve();
+  function saveLib() {
+    if (profileRef) {
+      libChain = libChain.then(function () {
+        var ids = lib.map(function (l) { return l.id; }).filter(Boolean);
+        return profileRef.set({ logos: ids });
+      }).catch(function () {});
+    } else {
+      try { localStorage.setItem('swipe-logos', JSON.stringify(lib.map(function (l) { return l.src; }).filter(Boolean))); } catch (e) {}
+    }
+  }
+  // Bild aus der Galerie zu einem quadratischen 256-px-Logo machen.
+  function fileToLogo(f, cb) {
+    var url = URL.createObjectURL(f), im = new Image();
+    im.onload = function () {
+      var c = document.createElement('canvas'); c.width = c.height = 256;
+      var s = Math.min(im.naturalWidth, im.naturalHeight);
+      c.getContext('2d').drawImage(im, (im.naturalWidth - s) / 2, (im.naturalHeight - s) / 2, s, s, 0, 0, 256, 256);
+      URL.revokeObjectURL(url);
+      var dataUrl = c.toDataURL('image/png');
+      c.toBlob(function (blob) {
+        if (!blob) { cb(null); return; }
+        var out = new Image();
+        out.onload = function () { cb({ id: null, img: out, src: dataUrl, blob: blob }); };
+        out.src = dataUrl;
+      }, 'image/png');
+    };
+    im.onerror = function () { cb(null); };
+    im.src = url;
+  }
+  // Logo in die Bibliothek legen und, wenn möglich, im Konto speichern.
+  function addToLib(entry) {
+    lib.push(entry); buildLib();
+    if (assetsApi && profileRef && entry.blob) {
+      assetsApi.upload(entry.blob, { type: 'image/png' }).then(function (res) {
+        entry.id = res.id; saveLib(); scheduleSave();
+      }, function (err) { setStatus('Logo konnte nicht im Konto gespeichert werden (' + ((err && err.code) || 'Fehler') + ').'); });
+    } else saveLib();
+  }
+  // Foto aus der Galerie verkleinern (lange Seite höchstens 2000 px).
+  function photoFromFile(f, cb) {
+    var url = URL.createObjectURL(f), im = new Image();
+    im.onload = function () {
+      var sc = Math.min(1, 2000 / Math.max(im.naturalWidth, im.naturalHeight));
+      var c = document.createElement('canvas');
+      c.width = Math.round(im.naturalWidth * sc); c.height = Math.round(im.naturalHeight * sc);
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob(function (blob) {
+        if (!blob) { cb(null); return; }
+        var out = new Image();
+        out.onload = function () { cb({ img: out, blob: blob }); };
+        out.src = URL.createObjectURL(blob);
+      }, 'image/jpeg', 0.88);
+    };
+    im.onerror = function () { cb(null); };
+    im.src = url;
+  }
+  var uploadChain = Promise.resolve(), pendingUploads = 0;
+  function uploadPhoto(slide, p) {
+    if (!assetsApi || !projectsRef) return;
+    pendingUploads++; setStatus('Lade Foto hoch …');
+    uploadChain = uploadChain.then(function () {
+      return assetsApi.upload(p.blob, { type: 'image/jpeg' }).then(function (res) {
+        imgCache[res.id] = p.img;
+        if (slide.img === p.img) slide.imgId = res.id;
+      }, function (err) {
+        setStatus('Foto konnte nicht gespeichert werden (' + ((err && err.code) || 'Fehler') + ').');
+      });
+    }).then(function () { pendingUploads--; scheduleSave(); });
+  }
+
+  /* ============================================================
+     4. Zeichnen (Vorschau, Miniaturen und Export)
+        pv = true: Vorschau mit blassen Feldern und Auswahlrahmen.
+        pv = false: Export, leere Felder und versteckte Apps fehlen.
+     ============================================================ */
+  function rpath(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    if (ctx.roundRect) { ctx.roundRect(x, y, w, h, r); return; }
+    r = Math.min(r, w / 2, h / 2);
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+  function wrapText(ctx, text, maxW) {
+    var out = [];
+    text.split('\n').forEach(function (para) {
+      var words = para.split(/\s+/).filter(Boolean);
+      if (!words.length) { out.push(''); return; }
+      var line = words[0];
+      for (var i = 1; i < words.length; i++) {
+        var t = line + ' ' + words[i];
+        if (ctx.measureText(t).width > maxW) { out.push(line); line = words[i]; } else line = t;
+      }
+      out.push(line);
+    });
+    return out;
+  }
+
+  function drawText(ctx, it, w, h, k, pv) {
+    if (it._editing && pv) return;                      // wird gerade im Textfeld getippt
+    if (it.placeholder && !pv) return;                  // unausgefüllt: nicht exportieren
+    var txt = it.placeholder ? it.ph : it.text;
+    if (!txt || !txt.trim()) { it._b = null; return; }
+    ctx.save();
+    if (it.placeholder) ctx.globalAlpha = 0.55;
+    var size = it.size * k, center = it.align === 'center';
+    ctx.font = it.weight + ' ' + size + 'px ' + FONT;
+    ctx.textBaseline = 'middle'; ctx.textAlign = center ? 'center' : 'left'; ctx.lineJoin = 'round';
+    var lines = wrapText(ctx, txt, it.w * w), lh = size * 1.25, total = lines.length * lh;
+    var top = it.y * h - total / 2, x = it.x * w, mw = 0;
+    lines.forEach(function (l) { mw = Math.max(mw, ctx.measureText(l).width); });
+    lines.forEach(function (ln, i) {
+      if (!ln) return;
+      var y = top + i * lh + lh / 2, lw = ctx.measureText(ln).width;
+      if (it.style === 'box') {
+        var pad = size * 0.28, bx = (center ? x - lw / 2 : x) - pad;
+        ctx.fillStyle = lum(it.color) > 0.6 ? '#000000' : '#ffffff';
+        rpath(ctx, bx, y - lh / 2 + lh * 0.04, lw + pad * 2, lh * 0.92, size * 0.22); ctx.fill();
+        ctx.fillStyle = it.color; ctx.fillText(ln, x, y);
+      } else if (it.style === 'outline') {
+        ctx.lineWidth = size * 0.18; ctx.strokeStyle = lum(it.color) > 0.6 ? '#000000' : '#ffffff';
+        ctx.strokeText(ln, x, y); ctx.fillStyle = it.color; ctx.fillText(ln, x, y);
+      } else if (it.style === 'shadow') {
+        ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = size * 0.3; ctx.shadowOffsetY = size * 0.06;
+        ctx.fillStyle = it.color; ctx.fillText(ln, x, y);
+      } else { ctx.fillStyle = it.color; ctx.fillText(ln, x, y); }
+      ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    });
+    ctx.restore();
+    it._b = { x: (center ? x - mw / 2 : x) / w, y: top / h, w: mw / w, h: total / h };
+  }
+
+  function drawLogo(ctx, it, w, h, pv) {
+    var sz = it.size * w, x = it.x * w - sz / 2, y = it.y * h - sz / 2;
+    if (it.img && it.img.complete && it.img.naturalWidth) {
+      ctx.save(); rpath(ctx, x, y, sz, sz, it.radius * sz); ctx.clip();
+      ctx.drawImage(it.img, x, y, sz, sz); ctx.restore();
+      return;
+    }
+    if (!pv) return;                                    // leeres Feld: nur in der Vorschau
+    var cx = x + sz / 2, cy = y + sz / 2;
+    ctx.save();
+    rpath(ctx, x, y, sz, sz, it.radius * sz);
+    ctx.fillStyle = 'rgba(255,255,255,0.16)'; ctx.fill();
+    ctx.setLineDash([sz * 0.08, sz * 0.06]); ctx.lineWidth = Math.max(2, sz * 0.025);
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.stroke(); ctx.setLineDash([]);
+    ctx.lineCap = 'round'; ctx.lineWidth = sz * 0.05; ctx.strokeStyle = '#ffffff';
+    ctx.beginPath(); ctx.moveTo(cx - sz * 0.09, cy - sz * 0.07); ctx.lineTo(cx + sz * 0.09, cy - sz * 0.07);
+    ctx.moveTo(cx, cy - sz * 0.16); ctx.lineTo(cx, cy + sz * 0.02); ctx.stroke();
+    ctx.font = '600 ' + sz * 0.12 + 'px ' + FONT; ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('2× tippen', cx, y + sz * 0.76);
+    ctx.restore();
+  }
+
+  function itemBox(it, w, h) {
+    if (it.type === 'logo') { var hh = it.size * w / h; return { x: it.x - it.size / 2, y: it.y - hh / 2, w: it.size, h: hh }; }
+    return it._b || null;
+  }
+
+  function drawSlide(ctx, s, w, h, sel_, pv) {
+    var k = w / W;
+    ctx.save();
+    ctx.fillStyle = s.bg; ctx.fillRect(0, 0, w, h);
+    if (s.img) {
+      var iw = s.img.naturalWidth, ih = s.img.naturalHeight, sc = Math.max(w / iw, h / ih) * s.zoom;
+      var dw = iw * sc, dh = ih * sc, mx = (dw - w) / 2, my = (dh - h) / 2;
+      ctx.drawImage(s.img, (w - dw) / 2 + clamp(s.ox * w, -mx, mx), (h - dh) / 2 + clamp(s.oy * h, -my, my), dw, dh);
+      if (s.dim > 0) { ctx.fillStyle = 'rgba(0,0,0,' + s.dim + ')'; ctx.fillRect(0, 0, w, h); }
+    }
+    s.items.forEach(function (it) {
+      var hidden = isHidden(s, it);
+      if (hidden && !pv) return;                        // versteckte App-Reihe wird nicht exportiert
+      ctx.save();
+      if (hidden) ctx.globalAlpha = 0.18;               // in der Vorschau nur schwach angedeutet
+      if (it.type === 'logo') drawLogo(ctx, it, w, h, pv); else drawText(ctx, it, w, h, k, pv);
+      ctx.restore();
+    });
+    if (pv && sel_ >= 0 && s.items[sel_] && !isHidden(s, s.items[sel_])) {
+      var b = itemBox(s.items[sel_], w, h);
+      if (b) {
+        var p = 8 * k + 2, bx = b.x * w - p, by = b.y * h - p, bw = b.w * w + p * 2, bh = b.h * h + p * 2;
+        ctx.setLineDash([10, 7]);
+        ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.strokeRect(bx, by, bw, bh);
+        ctx.lineWidth = 2; ctx.strokeStyle = '#ffffff'; ctx.strokeRect(bx, by, bw, bh);
+        ctx.setLineDash([]);
+      }
+    }
+    ctx.restore();
+  }
+
+  function render() {
+    if (!slides.length) return;
+    drawSlide(pctx, curSlide(), preview.width, preview.height, mode === 'items' ? sel : -1, true);
+    document.querySelectorAll('.thumb canvas').forEach(function (c, i) {
+      if (slides[i]) drawSlide(c.getContext('2d'), slides[i], c.width, c.height, -1, false);
+    });
+    scheduleSave();
+  }
+
+  /* ============================================================
+     5. Text direkt in der Vorschau tippen
+     ============================================================ */
+  function styleInline() {
+    var it = editing, ta = $('inlineEdit');
+    var cw = preview.clientWidth, ch = preview.clientHeight, fs = it.size * cw / W, width = it.w * cw;
+    var center = it.align === 'center';
+    ta.style.fontSize = fs + 'px'; ta.style.fontWeight = it.weight;
+    ta.style.color = it.color; ta.style.caretColor = it.color; ta.style.textAlign = it.align;
+    ta.style.width = width + 'px';
+    ta.style.left = (preview.offsetLeft + (center ? it.x * cw - width / 2 : it.x * cw)) + 'px';
+    ta.style.height = 'auto';
+    var hh = Math.max(ta.scrollHeight, fs * 1.25);
+    ta.style.height = hh + 'px';
+    ta.style.top = (preview.offsetTop + it.y * ch - hh / 2) + 'px';
+  }
+  function startEdit(it) {
+    commitEdit();
+    var ta = $('inlineEdit');
+    editing = it; it._editing = true;
+    ta.hidden = false; ta.value = it.placeholder ? '' : it.text; ta.placeholder = it.ph;
+    styleInline(); render(); ta.focus();
+  }
+  function commitEdit() {
+    if (!editing) return;
+    var it = editing, ta = $('inlineEdit');
+    editing = null; it._editing = false;
+    it.text = ta.value; it.placeholder = !ta.value.trim();
+    if (it.placeholder) it.text = '';
+    ta.hidden = true;
+    refresh(false);
+  }
+  $('inlineEdit').addEventListener('input', function (e) {
+    if (!editing) return;
+    editing.text = e.target.value; editing.placeholder = !e.target.value.trim();
+    styleInline(); render();
+  });
+  $('inlineEdit').addEventListener('blur', commitEdit);
+  $('inlineEdit').addEventListener('keydown', function (e) { if (e.key === 'Escape') $('inlineEdit').blur(); });
+  window.addEventListener('resize', commitEdit);
+
+  /* ============================================================
+     6. Oberfläche aufbauen
+     ============================================================ */
+  function setTab(name) {
+    document.querySelectorAll('.tab').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.tab === name)); });
+    document.querySelectorAll('.tabpanel').forEach(function (p) { p.hidden = p.id !== 'tab-' + name; });
+  }
+  document.querySelectorAll('.tab').forEach(function (b) { b.addEventListener('click', function () { setTab(b.dataset.tab); }); });
+
+  function buildStrip() {
+    var strip = $('strip'); strip.innerHTML = '';
+    slides.forEach(function (s, i) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'thumb'; b.setAttribute('aria-label', 'Folie ' + (i + 1));
+      if (i === cur) b.setAttribute('aria-current', 'true');
+      var c = document.createElement('canvas'); c.width = 108; c.height = 192;
+      var n = document.createElement('span'); n.textContent = i + 1;
+      b.appendChild(c); b.appendChild(n);
+      b.addEventListener('click', function () { commitEdit(); cur = i; sel = -1; refresh(true); });
+      strip.appendChild(b);
+    });
+    $('counter').textContent = 'Folie ' + (cur + 1) + ' / ' + slides.length;
+  }
+
+  function buildLib() {
+    var box = $('lib'); box.innerHTML = '';
+    if (!lib.length) {
+      var p = document.createElement('p'); p.className = 'hint';
+      p.textContent = 'Noch keine Logos. Lade welche hoch oder doppeltippe ein Logo-Feld in der Vorschau.';
+      box.appendChild(p); return;
+    }
+    lib.forEach(function (l, i) {
+      var d = document.createElement('div'); d.className = 'lib-item';
+      var a = document.createElement('button'); a.type = 'button'; a.className = 'lib-add';
+      a.setAttribute('aria-label', 'Logo ' + (i + 1) + ' verwenden');
+      var im = document.createElement('img'); im.src = l.img.src; im.alt = ''; a.appendChild(im);
+      a.addEventListener('click', function () { assignLogo(l); });
+      var x = document.createElement('button'); x.type = 'button'; x.className = 'lib-del'; x.textContent = '×';
+      x.setAttribute('aria-label', 'Logo ' + (i + 1) + ' aus der Bibliothek entfernen');
+      x.addEventListener('click', function () { lib.splice(i, 1); saveLib(); buildLib(); });
+      d.appendChild(a); d.appendChild(x); box.appendChild(d);
+    });
+  }
+
+  function buildChips() {
+    var box = $('chips'); box.innerHTML = '';
+    var s = curSlide(), n = 0;
+    s.items.forEach(function (it, i) {
+      if (isHidden(s, it)) return;
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'chip';
+      if (it.type === 'logo') { n++; b.textContent = 'Logo ' + n + (it.img ? '' : ' (leer)'); }
+      else b.textContent = (it.placeholder ? it.ph : it.text).replace(/\s+/g, ' ').slice(0, 18) || 'Text';
+      b.setAttribute('aria-pressed', String(i === sel));
+      b.addEventListener('click', function () { sel = (sel === i) ? -1 : i; refresh(false); });
+      box.appendChild(b);
+    });
+  }
+
+  function fillEditor() {
+    var it = curItem();
+    $('editor').hidden = !it; $('noSel').hidden = !!it;
+    $('textEd').hidden = !(it && it.type === 'text');
+    $('logoEd').hidden = !(it && it.type === 'logo');
+    if (!it) return;
+    if (it.type === 'text') {
+      $('text').value = it.placeholder ? '' : it.text; $('text').placeholder = it.ph;
+      $('size').value = it.size; $('sizeOut').textContent = it.size;
+      $('tw').value = Math.round(it.w * 100); $('twOut').textContent = Math.round(it.w * 100) + '%';
+      [['styleSeg', it.style], ['alignSeg', it.align], ['weightSeg', String(it.weight)]].forEach(function (p) {
+        document.querySelectorAll('#' + p[0] + ' button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.v === p[1])); });
+      });
+      document.querySelectorAll('#swatches .sw').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.color === it.color)); });
+      $('customColor').value = it.color;
+    } else {
+      $('pickLogo').textContent = it.img ? 'Logo ersetzen' : 'Logo wählen';
+      $('clearLogo').disabled = !it.img;
+      $('lsize').value = Math.round(it.size * 100); $('lsizeOut').textContent = Math.round(it.size * 100) + '%';
+      $('lrad').value = Math.round(it.radius * 100); $('lradOut').textContent = Math.round(it.radius * 100) + '%';
+    }
+  }
+
+  function fillSlideCtl() {
+    var s = curSlide(), has = !!s.img;
+    $('dim').value = Math.round(s.dim * 100); $('dimOut').textContent = Math.round(s.dim * 100) + '%';
+    $('zoom').value = Math.round(s.zoom * 100); $('zoomOut').textContent = Math.round(s.zoom * 100) + '%';
+    $('bgColor').value = s.bg;
+    $('dimField').hidden = !has; $('zoomField').hidden = !has; $('bgField').hidden = has;
+    $('clearPhoto').disabled = !has; $('modePhoto').disabled = !has;
+    $('setPhoto').textContent = has ? 'Foto ersetzen' : 'Foto für diese Folie';
+    if (!has && mode === 'photo') setMode('items');
+    $('rowBar').hidden = !s.hasRow;
+    document.querySelectorAll('#rowSeg button').forEach(function (b) {
+      b.setAttribute('aria-pressed', String((b.dataset.v === 'hide') === s.rowHidden));
+    });
+  }
+
+  function refresh(strip) {
+    var s = curSlide();
+    if (sel >= s.items.length || (sel >= 0 && isHidden(s, s.items[sel]))) sel = -1;
+    if (strip) buildStrip();
+    buildChips(); fillEditor(); fillSlideCtl(); render();
+  }
+  function setMode(m) {
+    mode = m;
+    $('modeItems').setAttribute('aria-pressed', String(m === 'items'));
+    $('modePhoto').setAttribute('aria-pressed', String(m === 'photo'));
+    render();
+  }
+
+  (function buildSwatches() {
+    var box = $('swatches');
+    COLORS.forEach(function (c) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'sw'; b.style.background = c; b.dataset.color = c;
+      b.setAttribute('aria-label', 'Textfarbe ' + c);
+      b.addEventListener('click', function () { var it = curItem(); if (!it) return; it.color = c; fillEditor(); render(); });
+      box.appendChild(b);
+    });
+    var inp = document.createElement('input'); inp.type = 'color'; inp.id = 'customColor'; inp.setAttribute('aria-label', 'Eigene Textfarbe');
+    inp.addEventListener('input', function () {
+      var it = curItem(); if (!it) return; it.color = inp.value;
+      document.querySelectorAll('#swatches .sw').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+      render();
+    });
+    box.appendChild(inp);
+  })();
+
+  /* ============================================================
+     7. Logos zuweisen
+     ============================================================ */
+  // Logo aus der Bibliothek: gewähltes Logo-Feld, sonst erstes leeres, sonst neues Feld.
+  function assignLogo(l) {
+    var s = curSlide(), it = curItem(), target = null;
+    if (it && it.type === 'logo') target = it;
+    else target = s.items.filter(function (i) { return i.type === 'logo' && !i.img && !isHidden(s, i); })[0] || null;
+    if (!target) {
+      $('libMsg').textContent = 'Kein freies Logo-Feld auf dieser Folie. Wähle ein Feld in der Vorschau, dann ersetzt das Logo es.';
+      return;
+    }
+    $('libMsg').textContent = '';
+    target.img = l.img; target.entry = l; target.logoId = null;
+    sel = s.items.indexOf(target); refresh(false);
+  }
+  function pickLogoFor(it) { pickTarget = it; $('logoPick').click(); }
+  $('logoPick').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0]; e.target.value = '';
+    var t = pickTarget; if (!f || !t) return;
+    fileToLogo(f, function (l) {
+      if (!l) return;
+      addToLib(l);
+      t.img = l.img; t.entry = l; t.logoId = null;
+      sel = curSlide().items.indexOf(t); refresh(false);
+    });
+  });
+  $('pickLogo').addEventListener('click', function () { var it = curItem(); if (it && it.type === 'logo') pickLogoFor(it); });
+  $('clearLogo').addEventListener('click', function () { var it = curItem(); if (it && it.type === 'logo') { it.img = null; it.entry = null; it.logoId = null; refresh(false); } });
+  $('addLogo').addEventListener('click', function () { $('logoInput').click(); });
+  $('logoInput').addEventListener('change', function (e) {
+    var files = Array.prototype.slice.call(e.target.files || []); e.target.value = '';
+    if (!files.length) return;
+    var pending = files.length, got = [];
+    files.forEach(function (f, i) { fileToLogo(f, function (l) { got[i] = l; if (--pending === 0) done(); }); });
+    function done() { got = got.filter(Boolean); got.forEach(addToLib); }
+  });
+
+  /* ============================================================
+     8. Eingaben im Element-Tab
+     ============================================================ */
+  $('text').addEventListener('input', function (e) {
+    var it = curItem(); if (!it) return;
+    it.text = e.target.value; it.placeholder = !e.target.value.trim();
+    render(); buildChips();
+  });
+  $('size').addEventListener('input', function (e) { var it = curItem(); if (!it) return; it.size = +e.target.value; $('sizeOut').textContent = e.target.value; render(); });
+  $('tw').addEventListener('input', function (e) { var it = curItem(); if (!it) return; it.w = +e.target.value / 100; $('twOut').textContent = e.target.value + '%'; render(); });
+  $('lsize').addEventListener('input', function (e) { var it = curItem(); if (!it) return; it.size = +e.target.value / 100; $('lsizeOut').textContent = e.target.value + '%'; render(); });
+  $('lrad').addEventListener('input', function (e) { var it = curItem(); if (!it) return; it.radius = +e.target.value / 100; $('lradOut').textContent = e.target.value + '%'; render(); });
+  [['styleSeg', 'style', false], ['alignSeg', 'align', false], ['weightSeg', 'weight', true]].forEach(function (p) {
+    document.querySelectorAll('#' + p[0] + ' button').forEach(function (b) {
+      b.addEventListener('click', function () { var it = curItem(); if (!it) return; it[p[1]] = p[2] ? +b.dataset.v : b.dataset.v; fillEditor(); render(); });
+    });
+  });
+  $('applyAll').addEventListener('click', function () {
+    var it = curItem(); if (!it || it.type !== 'text') return;
+    slides.forEach(function (s) { s.items.forEach(function (o) { if (o.type === 'text') { o.style = it.style; o.color = it.color; o.weight = it.weight; } }); });
+    render();
+  });
+  $('delItem').addEventListener('click', function () { if (sel < 0) return; curSlide().items.splice(sel, 1); sel = -1; refresh(false); });
+  $('addText').addEventListener('click', function () {
+    var s = curSlide();
+    s.items.push(newText({ ph: 'Neuer Text', x: 0.5, y: 0.5, align: 'center', size: 72 }));
+    sel = s.items.length - 1; refresh(false);
+  });
+
+  /* ============================================================
+     9. App-Reihe (Cover) und Foto-Einstellungen
+     ============================================================ */
+  document.querySelectorAll('#rowSeg button').forEach(function (b) {
+    b.addEventListener('click', function () { curSlide().rowHidden = (b.dataset.v === 'hide'); refresh(false); });
+  });
+  $('rowAdd').addEventListener('click', function () {
+    var s = curSlide(); s.items.push(newLogo({ group: 'row' })); s.rowHidden = false; arrangeRow(s); refresh(false);
+  });
+  $('rowDel').addEventListener('click', function () {
+    var s = curSlide(), r = rowItems(s); if (!r.length) return;
+    s.items.splice(s.items.indexOf(r[r.length - 1]), 1); arrangeRow(s); sel = -1; refresh(false);
+  });
+  $('dim').addEventListener('input', function (e) { curSlide().dim = +e.target.value / 100; $('dimOut').textContent = e.target.value + '%'; render(); });
+  $('zoom').addEventListener('input', function (e) { curSlide().zoom = +e.target.value / 100; $('zoomOut').textContent = e.target.value + '%'; render(); });
+  $('bgColor').addEventListener('input', function (e) { curSlide().bg = e.target.value; render(); });
+  $('setPhoto').addEventListener('click', function () { $('photoInput').click(); });
+  $('photoInput').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
+    photoFromFile(f, function (p) {
+      if (!p) return;
+      var s = curSlide(); s.img = p.img; s.imgId = null; s.zoom = 1; s.ox = 0; s.oy = 0;
+      refresh(false); uploadPhoto(s, p);
+    });
+  });
+  $('clearPhoto').addEventListener('click', function () { var s = curSlide(); s.img = null; s.imgId = null; refresh(false); });
+  $('modeItems').addEventListener('click', function () { setMode('items'); });
+  $('modePhoto').addEventListener('click', function () { if (curSlide().img) setMode('photo'); });
+
+  /* ============================================================
+     10. Folien verwalten
+     ============================================================ */
+  $('layoutApp').addEventListener('click', function () {
+    var s = curSlide(); s.items = appItems(Math.max(1, cur)); s.hasRow = false; s.rowHidden = false; sel = -1; refresh(true);
+  });
+  $('layoutCover').addEventListener('click', function () {
+    var s = curSlide(); s.items = coverItems(); s.hasRow = true; s.rowHidden = false; arrangeRow(s); sel = -1; refresh(true);
+  });
+  $('addPhotos').addEventListener('click', function () { $('fileInput').click(); });
+  $('fileInput').addEventListener('change', function (e) {
+    var files = Array.prototype.slice.call(e.target.files || []); e.target.value = '';
+    if (!files.length) return;
+    var pending = files.length, got = [];
+    files.forEach(function (f, i) { photoFromFile(f, function (p) { got[i] = p; if (--pending === 0) done(); }); });
+    function done() {
+      var at = cur + 1;
+      var ok = got.filter(Boolean);
+      var made = ok.map(function (p, i) { return newSlide({ img: p.img, items: appItems(at + i) }); });
+      if (!made.length) return;
+      Array.prototype.splice.apply(slides, [at, 0].concat(made));
+      cur = at; sel = -1; setMode('items'); refresh(true);
+      made.forEach(function (s, i) { uploadPhoto(s, ok[i]); });
+    }
+  });
+  $('addBlank').addEventListener('click', function () {
+    slides.splice(cur + 1, 0, newSlide({ items: appItems(cur + 1) })); cur += 1; sel = -1; refresh(true);
+  });
+  $('dup').addEventListener('click', function () {
+    commitEdit();
+    var s = curSlide(), c = Object.assign({}, s, { items: s.items.map(function (i) { return Object.assign({}, i); }) });
+    slides.splice(cur + 1, 0, c); cur += 1; sel = -1; refresh(true);
+  });
+  $('del').addEventListener('click', function () {
+    commitEdit();
+    slides.splice(cur, 1); if (!slides.length) slides.push(newSlide({ items: appItems(1) }));
+    cur = clamp(cur, 0, slides.length - 1); sel = -1; refresh(true);
+  });
+  $('moveLeft').addEventListener('click', function () {
+    if (cur === 0) return; var t = slides[cur]; slides[cur] = slides[cur - 1]; slides[cur - 1] = t; cur -= 1; refresh(true);
+  });
+  $('moveRight').addEventListener('click', function () {
+    if (cur >= slides.length - 1) return; var t = slides[cur]; slides[cur] = slides[cur + 1]; slides[cur + 1] = t; cur += 1; refresh(true);
+  });
+
+  /* ============================================================
+     11. Tippen und Ziehen in der Vorschau
+         Text: antippen = tippen, ziehen = verschieben.
+         Logo: ziehen = verschieben, doppelt antippen = Bild wählen.
+     ============================================================ */
+  var drag = null;
+  function hitTest(fx, fy) {
+    var s = curSlide(), pad = 0.015;
+    for (var i = s.items.length - 1; i >= 0; i--) {
+      if (isHidden(s, s.items[i])) continue;
+      var b = itemBox(s.items[i], preview.width, preview.height);
+      if (b && fx >= b.x - pad && fx <= b.x + b.w + pad && fy >= b.y - pad && fy <= b.y + b.h + pad) return i;
+    }
+    return -1;
+  }
+  preview.addEventListener('pointerdown', function (e) {
+    commitEdit();
+    var r = preview.getBoundingClientRect(), fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height;
+    var idx = -1;
+    if (mode === 'items') {
+      idx = hitTest(fx, fy);
+      if (idx < 0) { lastTap = null; if (sel !== -1) { sel = -1; refresh(false); } drag = null; return; }
+      if (idx !== sel) { sel = idx; refresh(false); }
+    }
+    drag = { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, moved: false, idx: idx };
+    try { preview.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  preview.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 6) return;
+    drag.moved = true;
+    var r = preview.getBoundingClientRect();
+    var dx = (e.clientX - drag.x) / r.width, dy = (e.clientY - drag.y) / r.height;
+    drag.x = e.clientX; drag.y = e.clientY;
+    var s = curSlide();
+    if (mode === 'photo' && s.img) {
+      s.ox += dx; s.oy += dy;
+      var w = preview.width, h = preview.height, sc = Math.max(w / s.img.naturalWidth, h / s.img.naturalHeight) * s.zoom;
+      var mx = (s.img.naturalWidth * sc - w) / 2 / w, my = (s.img.naturalHeight * sc - h) / 2 / h;
+      s.ox = clamp(s.ox, -mx, mx); s.oy = clamp(s.oy, -my, my);
+    } else {
+      var it = curItem();
+      if (!it || it.type === 'logo') return;            // Logo-Plätze sind fest
+      it.x = clamp(it.x + dx, 0.02, 0.98); it.y = clamp(it.y + dy, 0.02, 0.98);
+    }
+    render();
+  });
+  preview.addEventListener('pointerup', function () {
+    var d = drag; drag = null;
+    if (!d || d.moved || d.idx < 0) return;
+    var it = curSlide().items[d.idx]; if (!it) return;
+    var now = Date.now();
+    var dbl = lastTap && lastTap.idx === d.idx && lastTap.slide === cur && now - lastTap.t < 420;
+    lastTap = dbl ? null : { t: now, idx: d.idx, slide: cur };
+    if (it.type === 'logo') { if (dbl) pickLogoFor(it); }
+    else startEdit(it);
+  });
+  preview.addEventListener('pointercancel', function () { drag = null; });
+
+  /* ============================================================
+     12. Export und Speichern
+         Das Speichern läuft über die Download-Funktion der Seite:
+         Der Viewer fragt kurz nach, dann landet das Bild bei dir.
+     ============================================================ */
+  var downloads = null;       // wird gesetzt, sobald die Download-Funktion antwortet
+  var exported = [];          // [{ blob, url, name }]
+
+  function fontsReady(cb) {
+    // Nie ewig warten: nach 2,5 s geht es auch ohne geladene Schrift weiter.
+    var done = false, finish = function () { if (!done) { done = true; cb(); } };
+    setTimeout(finish, 2500);
+    if (document.fonts && document.fonts.load) {
+      Promise.all([document.fonts.load('500 40px Inter'), document.fonts.load('600 40px Inter'), document.fonts.load('800 40px Inter')]).then(finish, finish);
+    } else finish();
+  }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+  function saveOne(item) {
+    if (!downloads) return Promise.resolve(false);
+    return downloads.save({ filename: item.name, data: item.blob }).then(
+      function () { return true; },
+      function (err) {
+        var code = err && err.code;
+        if (code === 'declined') return false;
+        $('exportStatus').textContent = code === 'rate_limited'
+          ? 'Bitte kurz warten und noch einmal tippen.'
+          : 'Speichern nicht möglich (' + (code || 'unbekannt') + '). Halte das Bild gedrückt.';
+        return false;
+      });
+  }
+  function saveAll() {
+    var i = 0;
+    (function next() {
+      if (i >= exported.length) { $('exportStatus').textContent = 'Fertig gespeichert.'; return; }
+      $('exportStatus').textContent = 'Speichere Folie ' + (i + 1) + ' von ' + exported.length + ' …';
+      saveOne(exported[i]).then(function (ok) { if (!ok) return; i++; next(); });
+    })();
+  }
+  $('saveAll').addEventListener('click', saveAll);
+
+  function showResults(skipped) {
+    var grid = $('resultsGrid'); grid.innerHTML = '';
+    exported.forEach(function (item, i) {
+      var fig = document.createElement('figure'), im = document.createElement('img');
+      im.alt = 'Folie ' + (i + 1); im.src = item.url;
+      var cap = document.createElement('figcaption'); cap.textContent = 'Folie ' + (i + 1);
+      fig.appendChild(im); fig.appendChild(cap);
+      if (downloads) {
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'btn small'; b.textContent = 'Speichern';
+        b.addEventListener('click', function () { saveOne(item); });
+        fig.appendChild(b);
+      }
+      grid.appendChild(fig);
+    });
+    $('saveAll').hidden = !downloads;
+    $('resultsHint').textContent = downloads
+      ? 'Speichern öffnet eine Bestätigung. Auf dem iPad geht das Bild dann über das Teilen-Menü in Fotos. In TikTok lädst du die Folien in dieser Reihenfolge hoch.'
+      : 'Jedes Bild gedrückt halten und in Fotos sichern. In TikTok lädst du die Folien in dieser Reihenfolge hoch.';
+    $('results').hidden = false;
+    $('exportStatus').textContent = exported.length + ' Folien fertig' + (skipped ? ', ' + skipped + ' leere Felder weggelassen.' : '.');
+    $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  $('exportBtn').addEventListener('click', function () {
+    commitEdit();
+    var status = $('exportStatus');
+    status.textContent = 'Exportiere …';
+    fontsReady(function () {
+      try {
+        exported.forEach(function (e) { URL.revokeObjectURL(e.url); });
+        exported = [];
+        var c = document.createElement('canvas'); c.width = W; c.height = H;
+        var ctx = c.getContext('2d'), skipped = 0;
+        (function next(i) {
+          try {
+          if (i >= slides.length) { showResults(skipped); render(); return; }
+          var s = slides[i];
+          s.items.forEach(function (it) {
+            if (isHidden(s, it)) return;
+            if ((it.type === 'logo' && !it.img) || (it.type === 'text' && it.placeholder)) skipped++;
+          });
+          drawSlide(ctx, s, W, H, -1, false);
+          c.toBlob(function (blob) {
+            if (!blob) { status.textContent = 'Export fehlgeschlagen bei Folie ' + (i + 1) + '.'; return; }
+            exported.push({ blob: blob, url: URL.createObjectURL(blob), name: 'folie-' + pad2(i + 1) + '.jpg' });
+            next(i + 1);
+          }, 'image/jpeg', 0.93);
+          } catch (err) { status.textContent = 'Export fehlgeschlagen: ' + (err && err.message ? err.message : err); }
+        })(0);
+      } catch (err) {
+        status.textContent = 'Export fehlgeschlagen: ' + (err && err.message ? err.message : err);
+      }
+    });
+  });
+
+  /* ============================================================
+     13. Projekte und automatisches Speichern
+         Jede Änderung wird nach kurzer Pause im Konto gespeichert.
+         Projekte sind privat: nur du siehst sie, wenn du angemeldet bist.
+     ============================================================ */
+  function serializeItem(it) {
+    if (it.type === 'logo') {
+      return { type: 'logo', logoId: it.entry ? (it.entry.id || null) : (it.logoId || null),
+        x: it.x, y: it.y, size: it.size, radius: it.radius, group: it.group || null };
+    }
+    return { type: 'text', text: it.text, ph: it.ph, placeholder: it.placeholder, x: it.x, y: it.y,
+      size: it.size, color: it.color, align: it.align, weight: it.weight, style: it.style, w: it.w };
+  }
+  function serializeSlide(s) {
+    return { imgId: s.imgId || null, bg: s.bg, zoom: s.zoom, ox: s.ox, oy: s.oy, dim: s.dim,
+      hasRow: !!s.hasRow, rowHidden: !!s.rowHidden, items: s.items.map(serializeItem) };
+  }
+  function snapshot() { return JSON.stringify({ name: project.name, slides: slides.map(serializeSlide) }); }
+  function deserializeSlide(d) {
+    var s = newSlide({ bg: d.bg, zoom: d.zoom, ox: d.ox, oy: d.oy, dim: d.dim, hasRow: !!d.hasRow, rowHidden: !!d.rowHidden, imgId: d.imgId || null });
+    if (d.imgId) s.img = getImg(d.imgId);
+    s.items = (d.items || []).map(function (i) {
+      if (i.type === 'logo') {
+        return newLogo({ x: i.x, y: i.y, size: i.size, radius: i.radius, group: i.group || null,
+          logoId: i.logoId || null, img: i.logoId ? getImg(i.logoId) : null });
+      }
+      return newText(i);
+    });
+    return s;
+  }
+  function makeThumb() {
+    try {
+      var c = document.createElement('canvas'); c.width = 90; c.height = 160;
+      drawSlide(c.getContext('2d'), slides[0], 90, 160, -1, false);
+      return c.toDataURL('image/jpeg', 0.7);
+    } catch (e) { return ''; }
+  }
+
+  function scheduleSave() {
+    if (!project || !projectsRef || loadingProject) return;
+    if (snapshot() === lastSaved) return;
+    setStatus('Ungespeichert …');
+    clearTimeout(saveTimer); saveTimer = setTimeout(doSave, 900);
+  }
+  function doSave() {
+    clearTimeout(saveTimer); saveTimer = null;
+    if (!project || !projectsRef) return Promise.resolve();
+    if (saving) { savePending = true; return savingPromise; }
+    var snap = snapshot(), proj = project;
+    if (snap === lastSaved) { setStatus(pendingUploads ? 'Lade Foto hoch …' : 'Gespeichert'); return Promise.resolve(); }
+    saving = true; setStatus('Speichert …');
+    var data = JSON.parse(snap);
+    var doc = { name: data.name, slides: data.slides, slideCount: data.slides.length,
+      thumb: makeThumb(), updatedAt: Date.now(), createdAt: proj.createdAt };
+    savingPromise = projectsRef.doc(proj.id).set(doc).then(function () {
+      saving = false;
+      if (project === proj) { lastSaved = snap; setStatus(pendingUploads ? 'Lade Foto hoch …' : 'Gespeichert'); }
+      if (savePending) { savePending = false; return doSave(); }
+    }, function (err) {
+      saving = false; savePending = false;
+      setStatus('Speichern fehlgeschlagen (' + ((err && err.code) || 'Fehler') + ')');
+    });
+    return savingPromise;
+  }
+  document.addEventListener('visibilitychange', function () { if (document.hidden) doSave(); });
+  window.addEventListener('pagehide', function () { doSave(); });
+
+  function relTime(ts) {
+    if (!ts) return '';
+    var m = Math.round((Date.now() - ts) / 60000);
+    if (m < 1) return 'gerade eben';
+    if (m < 60) return 'vor ' + m + ' Min.';
+    var hr = Math.round(m / 60);
+    if (hr < 24) return 'vor ' + hr + ' Std.';
+    var d = Math.round(hr / 24);
+    return d === 1 ? 'gestern' : 'vor ' + d + ' Tagen';
+  }
+  function mkBtn(text, cls) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn small' + (cls ? ' ' + cls : ''); b.textContent = text; return b;
+  }
+
+  function showHomeView() {
+    commitEdit(); project = null;
+    $('homeView').hidden = false; $('editorView').hidden = true;
+    $('backBtn').hidden = true; $('projName').hidden = true; $('appTitle').hidden = false; $('exportBar').hidden = true;
+    setStatus('');
+  }
+  function showEditorView() {
+    $('homeView').hidden = true; $('editorView').hidden = false;
+    $('backBtn').hidden = false; $('appTitle').hidden = true;
+    $('projName').hidden = false; $('projName').value = project.name; $('exportBar').hidden = false;
+    $('results').hidden = true; $('exportStatus').textContent = '';
+    setStatus(projectsRef ? '' : 'Nicht gespeichert');
+    setTab('slides'); setMode('items');
+  }
+  function goHome() {
+    commitEdit();
+    doSave().then(function () { showHomeView(); listProjects(); });
+  }
+  $('backBtn').addEventListener('click', goHome);
+  $('projName').addEventListener('input', function (e) {
+    if (!project) return;
+    project.name = e.target.value.trim() || 'Ohne Namen'; scheduleSave();
+  });
+
+  function defaultSlides() {
+    var cover = newSlide({ bg: '#161616', hasRow: true, items: coverItems() });
+    arrangeRow(cover);
+    return [cover, newSlide({ bg: '#222222', items: appItems(1) })];
+  }
+  function newId() { return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function newProject() {
+    loadingProject = true;
+    project = { id: newId(), name: 'Neue Slideshow', createdAt: Date.now() };
+    slides = defaultSlides(); cur = 0; sel = -1; lastSaved = '';
+    showEditorView(); refresh(true);
+    loadingProject = false;
+    scheduleSave();
+  }
+  function openProject(id, data) {
+    loadingProject = true;
+    project = { id: id, name: data.name || 'Ohne Namen', createdAt: data.createdAt || Date.now() };
+    slides = (data.slides || []).map(deserializeSlide);
+    if (!slides.length) slides = defaultSlides();
+    cur = 0; sel = -1;
+    showEditorView(); refresh(true);
+    lastSaved = snapshot();
+    loadingProject = false;
+    setStatus('Gespeichert');
+  }
+  function deleteProject(id, data) {
+    var ids = {};
+    (data.slides || []).forEach(function (s) { if (s.imgId) ids[s.imgId] = true; });
+    var chain = Promise.resolve();
+    if (assetsApi) Object.keys(ids).forEach(function (aid) { chain = chain.then(function () { return assetsApi.delete(aid).catch(function () {}); }); });
+    return chain.then(function () { return projectsRef.doc(id).delete(); });
+  }
+  function projCard(id, data) {
+    var box = document.createElement('div'); box.className = 'proj';
+    var open = document.createElement('button'); open.type = 'button'; open.className = 'proj-open';
+    open.setAttribute('aria-label', 'Projekt öffnen: ' + (data.name || 'Ohne Namen'));
+    if (data.thumb) { var im = document.createElement('img'); im.src = data.thumb; im.alt = ''; open.appendChild(im); }
+    else { var ph = document.createElement('div'); ph.className = 'noimg'; open.appendChild(ph); }
+    var nm = document.createElement('span'); nm.className = 'proj-name'; nm.textContent = data.name || 'Ohne Namen';
+    var meta = document.createElement('span'); meta.className = 'hint';
+    meta.textContent = (data.slideCount || 0) + ' Folien · ' + relTime(data.updatedAt);
+    open.appendChild(nm); open.appendChild(meta);
+    open.addEventListener('click', function () { openProject(id, data); });
+    var row = document.createElement('div'); row.className = 'row';
+    var del = mkBtn('Löschen'); row.appendChild(del);
+    del.addEventListener('click', function () {
+      row.innerHTML = '';
+      var q = document.createElement('span'); q.className = 'hint'; q.textContent = 'Wirklich löschen?';
+      var yes = mkBtn('Ja, löschen'), no = mkBtn('Abbrechen');
+      yes.addEventListener('click', function () {
+        yes.disabled = true;
+        deleteProject(id, data).then(listProjects, function () { $('homeMsg').textContent = 'Löschen fehlgeschlagen.'; listProjects(); });
+      });
+      no.addEventListener('click', function () { row.innerHTML = ''; row.appendChild(del); });
+      row.appendChild(q); row.appendChild(yes); row.appendChild(no);
+    });
+    box.appendChild(open); box.appendChild(row);
+    return box;
+  }
+  function listProjects() {
+    var grid = $('projGrid'), msg = $('homeMsg');
+    grid.innerHTML = '';
+    if (!projectsRef) {
+      msg.textContent = 'Speichern im Konto ist hier nicht verfügbar. Du kannst trotzdem ein Projekt starten, es wird aber nicht gespeichert. Exportiere dann, bevor du schließt.';
+      return;
+    }
+    msg.textContent = 'Lade deine Projekte …';
+    projectsRef.orderBy('updatedAt', 'desc').get().then(function (snap) {
+      msg.textContent = snap.empty ? 'Noch keine Projekte. Starte dein erstes.' : '';
+      snap.docs.forEach(function (d) { grid.appendChild(projCard(d.id, d.data())); });
+    }, function (err) { msg.textContent = 'Projekte konnten nicht geladen werden (' + ((err && err.code) || 'Fehler') + ').'; });
+  }
+  $('newProject').addEventListener('click', newProject);
+
+  // Logos aus der alten lokalen Bibliothek einmalig ins Konto übernehmen.
+  function migrateLocalLogos() {
+    var raw = null, arr = null;
+    try { raw = localStorage.getItem('swipe-logos'); } catch (e) {}
+    if (!raw || !assetsApi) return;
+    try { arr = JSON.parse(raw); } catch (e) { return; }
+    var clear = function () { try { localStorage.removeItem('swipe-logos'); } catch (e) {} };
+    if (!Array.isArray(arr) || !arr.length) { clear(); return; }
+    var chain = Promise.resolve();
+    arr.forEach(function (src) {
+      chain = chain.then(function () {
+        return assetsApi.upload(dataUrlToBlob(src), { type: 'image/png' }).then(function (res) {
+          var im = new Image(); im.onload = buildLib; im.src = src;
+          lib.push({ id: res.id, img: im, src: null });
+        });
+      });
+    });
+    chain.then(function () { saveLib(); buildLib(); clear(); }, function () {});
+  }
+
+  /* ============================================================
+     14. Start
+     ============================================================ */
+  function noAccount() {
+    db = null; profileRef = null; projectsRef = null;
+    try {
+      var raw = localStorage.getItem('swipe-logos');
+      if (raw) { var stored = JSON.parse(raw); if (Array.isArray(stored)) lib = stored.map(loadSrc); }
+    } catch (e) {}
+    buildLib(); listProjects();
+  }
+  function init() {
+    buildLib(); fontsReady(render);
+    var c = window.claude;
+    if (c && c.use) {
+      c.use('downloads').then(function (d) { downloads = d || null; }, function () {});
+    }
+    if (!c || !c.use) { noAccount(); return; }
+    Promise.all([c.use('db'), c.use('user'), c.use('assets')]).then(function (r) {
+      db = r[0]; assetsApi = r[2];
+      return r[1] && db ? r[1].id() : null;
+    }).then(function (id) {
+      if (!id) { noAccount(); return; }
+      uid = id;
+      profileRef = db.doc('data/users/' + uid + '/profile');
+      projectsRef = profileRef.collection('projects');
+      return profileRef.get().then(function (snap) {
+        var ids = (snap.exists && snap.data().logos) || [];
+        lib = ids.map(function (lid) { return { id: lid, img: getImg(lid), src: null }; });
+        buildLib(); migrateLocalLogos(); listProjects();
+      });
+    }).catch(function () { noAccount(); });
+  }
+  init();
+})();
+</script>
+
+</body></html>
